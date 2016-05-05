@@ -1,0 +1,37 @@
+appname: registry
+
+build:
+  base: laincloud/centos-lain:20160503
+  prepare:
+    version: "1"
+    script:
+      - yum -y install librados2-devel apache2-utils && yum -y clean all
+      - mkdir -p /go/src/github.com/docker/distribution
+      - cd /go/src/github.com/docker/distribution &&
+        git clone https://github.com/docker/distribution.git . &&
+        git checkout v2.4.0 &&
+        GOPATH=/go/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH make PREFIX=/go clean binaries
+  script:
+    - mkdir -p /lain/app/fake_volumes
+
+release:
+  dest_base: sunyi00/centos:1.0.0
+  copy:
+    - src: /go/bin/registry
+      dest: /usr/bin/registry
+    - src: config.yml
+      dest: config.yml
+    - src: auth
+      dest: auth
+    - src: entry.sh
+      dest: entry.sh
+
+web:
+  cmd: ./entry.sh
+  memory: 128m
+  port: 5000
+  persistent_dirs:
+    - /lain/app/fake_volumes  # prevent the registry drifting to another node
+
+notify:
+  slack: "#lain"

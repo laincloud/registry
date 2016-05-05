@@ -1,0 +1,34 @@
+#!/usr/bin/python
+
+from urllib2 import urlopen
+import json
+import sys
+
+def get_auth_config():
+    try:
+       endpoint, key = sys.argv[1], sys.argv[2]
+       f = urlopen('%s/v2/keys%s' % (endpoint, key))
+    except:
+        return False, ''
+    data = json.load(f)
+    return True, data['node']['value']
+
+
+def load_configs(value):
+    try:
+        configs = json.loads(value)
+        realm, issuer, service = configs.get('realm'), configs.get('issuer'), configs.get('service')
+        if realm and issuer and service:
+            return True, realm, issuer, service
+    except:
+        pass
+    return False, '', '', ''
+
+
+if __name__ == '__main__':
+    success, value = get_auth_config()
+    if success:
+        is_auth_open, realm, issuer, service = load_configs(value)
+        print '%s,%s,%s,%s' % (is_auth_open, realm, issuer, service)
+    else:
+        print False

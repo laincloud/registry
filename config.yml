@@ -1,0 +1,28 @@
+version: 0.1
+log:
+  level: debug
+  fields:
+    service: registry
+    environment: development
+storage:
+  cache:
+    layerinfo: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  maintenance:
+    uploadpurging:
+      enabled: false
+  delete:
+    enabled: true
+compatibility:
+  schema1:
+    disablesignaturestore: true
+http:
+  addr: :5000
+  secret: asecretforlocaldevelopment
+auth:
+  token:
+    realm: https://console.domain/api/v1/authorize/registry/
+    issuer: "auth server"
+    service: "lain.local"
+    rootcertbundle: /lain/app/auth/server.pem
