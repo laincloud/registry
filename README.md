@@ -7,7 +7,7 @@ Lain Registry 组件在官方 Registry 版本的基础上进行了 Lain 化。�
 
 ## 组件顶层设计
 
-Lain Registry 仓库地址为： `http://laingit.bdp.cc/lain/registry.git`
+Lain Registry 仓库地址为： `https://github.com/laincloud/registry.git`
 
 Lain Registry 的组件架构图如下所示：
 
@@ -77,7 +77,7 @@ storage:
       accesskey: ABCDEFGHIJ0123456789
       secretkey: AB12C3dE4fGhIvmMB4TZrpypR0rOJ2G5WhGUPn9L
       region: us-west-1 #important if use amazon filesystem
-      regionendpoint: http://s3.bdp.svc #optional endpoints 
+      regionendpoint: http://s3.domain.svc #optional endpoints 
       bucket: test
       secure: true
       v4auth: true
@@ -105,7 +105,7 @@ storage:
         accesskeyid: ABCDEFGHIJ0123456789 #accesskeyid
         accesskeysecret: AB12C3dE4fGhIvmMB4TZrpypR0rOJ2G5WhGUPn9L #accesskeysecret
         region: oss-cn-beijing #OSS region name
-        endpoint: http://s3.bdp.svc #optional endpoints
+        endpoint: http://s3.domain.svc #optional endpoints
         internal: optional internal endpoint
         bucket: test #OSS bucket
         encrypt: false #optional data encryption setting
