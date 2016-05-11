@@ -15,7 +15,7 @@ build:
     - mkdir -p /lain/app/fake_volumes
 
 release:
-  dest_base: sunyi00/centos:1.0.0
+  dest_base: laincloud/centos-lain:20160503
   copy:
     - src: /go/bin/registry
       dest: /usr/bin/registry
