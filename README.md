@@ -109,7 +109,6 @@ storage:
 
 #### 注意事项:
 
-```
 当config.yaml有问题时，重启时registry无法正常启动，需要进行如下操作：
 
 1. docker rm registry；
@@ -117,7 +116,6 @@ storage:
 2. 等待deploy重新拉起registry再进行修改
 
 在修改config.yaml时，最好先测试然后再重启registry。
-```
 
 
 ### 清理设置
@@ -139,4 +137,6 @@ compatibility: # see issue https://github.com/docker/distribution/issues/1661
 - registry garbage-collect config.yaml # 在registry节点清理被标记删除的layer及manifest
 
 
-**注意事项：**registry 清理最好是在 read-only 状态下进行清理工作，也就是在 gc 的时候不要 push image
+#### 注意事项：
+
+registry 清理最好是在 read-only 状态下进行清理工作，也就是在 gc 的时候不要 push image
