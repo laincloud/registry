@@ -38,7 +38,7 @@ LAIN Registry 的组件架构图如下所示：
 
 - 重启 registry 容器
 
-2. Close Auth
+1. Close Auth
 
 - `etcdctl rm /lain/config/auth/registry`
 
@@ -62,7 +62,7 @@ LAIN Registry 的组件架构图如下所示：
 在修改config.yaml时，最好先测试然后再重启registry。
 ```
 
-1 对于S3支持：
+1. 对于S3支持：
 
 ```
 #Example:
@@ -99,7 +99,7 @@ auth:
       rootcertbundle: /lain/app/auth/server.pem
 ```
 
-2 对于OSS支持：
+1. 对于OSS支持：
 
 ```
 storage:
@@ -117,7 +117,7 @@ storage:
 ```
 
 ### 清理设置
-1 配置方案
+1. 配置方案
 
 ```
 storage:
@@ -128,7 +128,7 @@ compatibility: # see issue https://github.com/docker/distribution/issues/1661
     disablesignaturestore: true
 ```
 
-2 清理方式
+1. 清理方式
 
 ```
 1. curl -X DELETE /v2/{repo}/manifests/{digest} # 调用registry api 删除指定digest的image
