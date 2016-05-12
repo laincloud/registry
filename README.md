@@ -24,10 +24,10 @@ LAIN Registry 的组件架构图如下所示：
 ### Auth 设置
 集群中由 LAIN Console 作为 LAIN Registry 的 auth server，API为`api/v1/authorize/registry/`
 
-1. Open Auth 
+#### Open Auth 
 
 - 首先在 etcd 中设置：` etcdctl set /lain/config/auth/registry '{"realm":"http://console.<domain>/api/v1/authorize/registry/", "issuer":"auth server", "service":"<domain>"}'`
-    
+
     其中的参数对应如下，详细介绍可以参考[这里](https://docs.docker.com/registry/configuration/#token)：
     
     > realm： 提供 registry auth 的地址
@@ -38,7 +38,7 @@ LAIN Registry 的组件架构图如下所示：
 
 - 重启 registry 容器
 
-1. Close Auth
+#### Close Auth
 
 - `etcdctl rm /lain/config/auth/registry`
 
@@ -47,22 +47,13 @@ LAIN Registry 的组件架构图如下所示：
 
 ### 储存后端设置
 
-
-```
 对于storage配置的修改需要进行如下操作：
-1. docker-enter registry container; 修改对应的config.yaml
+
+1. docker-enter registry container; 修改对应的config.yaml；
+
 2. 重启registry
-```
-#### 注意事项
 
-```
-当config.yaml有问题时，重启时registry无法正常启动，需要进行如下操作：
-1. docker rm registry；
-2. 等待deploy重新拉起registry再进行修改，
-在修改config.yaml时，最好先测试然后再重启registry。
-```
-
-1. 对于S3支持：
+#### 对于S3支持：
 
 ```
 #Example:
@@ -99,7 +90,7 @@ auth:
       rootcertbundle: /lain/app/auth/server.pem
 ```
 
-1. 对于OSS支持：
+#### 对于OSS支持：
 
 ```
 storage:
@@ -116,8 +107,22 @@ storage:
         rootdirectory: /registry #optional root directory
 ```
 
+#### 注意事项:
+
+```
+当config.yaml有问题时，重启时registry无法正常启动，需要进行如下操作：
+
+1. docker rm registry；
+
+2. 等待deploy重新拉起registry再进行修改
+
+在修改config.yaml时，最好先测试然后再重启registry。
+```
+
+
 ### 清理设置
-1. 配置方案
+
+#### 配置方案：
 
 ```
 storage:
@@ -128,14 +133,10 @@ compatibility: # see issue https://github.com/docker/distribution/issues/1661
     disablesignaturestore: true
 ```
 
-1. 清理方式
+#### 清理方式：
 
-```
-1. curl -X DELETE /v2/{repo}/manifests/{digest} # 调用registry api 删除指定digest的image
-2. registry garbage-collect config.yaml # 在registry节点清理被标记删除的layer及manifest
-```
+- curl -X DELETE /v2/{repo}/manifests/{digest} # 调用registry api 删除指定digest的image
+- registry garbage-collect config.yaml # 在registry节点清理被标记删除的layer及manifest
 
-#### 注意事项
-```
-registry 清理最好是在read-only状态下进行清理工作，也就是在gc的时候不要push image
-```
+
+**注意事项：**registry 清理最好是在 read-only 状态下进行清理工作，也就是在 gc 的时候不要 push image
