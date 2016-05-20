@@ -1,5 +1,7 @@
 # LAIN Registry
 
+[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+
 ## 组件描述
 LAIN Registry 组件在 LAIN 中主要用于 Image 存储，集群中所以的 Image 都由 LAIN Registry 组件提供及存储。组件目前使用的 Registry 的版本为 V2.4.0，关于 Registry 的官方具体描述可以参见[这里](https://github.com/docker/distribution)。
 
