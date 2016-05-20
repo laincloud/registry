@@ -3,13 +3,13 @@ appname: registry
 build:
   base: laincloud/centos-lain:20160503
   prepare:
-    version: "1"
+    version: "2"
     script:
       - yum -y install librados2-devel apache2-utils && yum -y clean all
       - mkdir -p /go/src/github.com/docker/distribution
       - cd /go/src/github.com/docker/distribution &&
         git clone https://github.com/docker/distribution.git . &&
-        git checkout v2.4.0 &&
+        git checkout v2.4.1 &&
         GOPATH=/go/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH make PREFIX=/go clean binaries
   script:
     - mkdir -p /lain/app/fake_volumes
