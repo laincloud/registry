@@ -28,7 +28,7 @@ release:
 
 web:
   cmd: ./entry.sh
-  memory: 128m
+  memory: 256m
   port: 5000
   persistent_dirs:
     - /lain/app/fake_volumes  # prevent the registry drifting to another node
