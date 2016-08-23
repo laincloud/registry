@@ -18,4 +18,8 @@ else
     export REGISTRY_AUTH=""
 fi
 
+registry garbage-collect config.yml
+
+sleep 5
+
 exec registry serve config.yml
