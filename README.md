@@ -4,13 +4,11 @@
 [![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 ## 组件描述
-LAIN Registry 组件在 LAIN 中主要用于 Image 存储，集群中所以的 Image 都由 LAIN Registry 组件提供及存储。组件目前使用的 Registry 的版本为 V2.4.0，关于 Registry 的官方具体描述可以参见[这里](https://github.com/docker/distribution)。
+LAIN Registry 组件在 LAIN 中主要用于镜像存储，集群中所有的镜像都由 LAIN Registry 组件提供及存储。关于 Registry 的官方具体描述可以参见[这里](https://github.com/docker/distribution)。
 
-LAIN Registry 组件在 Docker Registry 版本的基础上进行了 LAIN 化。SA 可以在 etcd 中进行一些配置，以更新 Registry 相应的设置，包括后段存储、Auth设置等。LAIN Registry 组件默认使用本地磁盘作为存储后端，默认不使用 Auth。
+LAIN Registry 组件在 Docker Registry 版本的基础上进行了 LAIN 化。SA 可以在 etcd 中进行一些配置，以更新 Registry 相应的设置，包括后端存储、Auth设置等。LAIN Registry 组件默认使用本地磁盘作为存储后端，默认不使用 Auth。
 
 ## 组件顶层设计
-
-LAIN Registry 仓库地址为： `https://github.com/laincloud/registry.git`
 
 LAIN Registry 的组件架构图如下所示：
 
@@ -18,7 +16,7 @@ LAIN Registry 的组件架构图如下所示：
 
 在启动 LAIN Registry Container 时，会从 etcd 中读取一些配置，然后以这些配置为基础结合提供的 config.yml 文件运行 Registry。
 
-默认情况下组件会将 Image 存放在本地磁盘的 `/var/lib/registry` 目录下(LAIN bootstrap 时设置)，也可以通过配置 moosfs 等来实现集群分布式存储；
+默认情况下组件会将镜像存放在本地磁盘的 `/var/lib/registry` 目录下(LAIN bootstrap 时设置)，也可以通过配置 moosfs 等来实现集群分布式存储；
 
 默认情况下组件不开启 Auth，但是 LAIN 中也提供了 Registry 的 auth server，即 LAIN Console，可以在 etcd 中设置相应的 Auth 信息，LAIN 中使用的 Registry Auth 方式遵照官方实现，具体可以参见[这里](https://docs.docker.com/registry/spec/auth/token/)
 
