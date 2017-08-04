@@ -1,5 +1,7 @@
 appname: registry
 
+giturl: https://github.com/laincloud/registry
+
 build:
   base: laincloud/centos-lain:20160503
   prepare:
@@ -15,7 +17,7 @@ build:
     - mkdir -p /lain/app/fake_volumes
 
 release:
-  dest_base: laincloud/centos-lain:20160503
+  dest_base: laincloud/centos-lain:20170803
   copy:
     - src: /go/bin/registry
       dest: /usr/bin/registry
@@ -27,7 +29,7 @@ release:
       dest: entry.sh
 
 web:
-  cmd: ./entry.sh
+  cmd: /lain/app/entry.sh
   memory: 256m
   port: 5000
   persistent_dirs:
