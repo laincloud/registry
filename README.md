@@ -141,3 +141,30 @@ compatibility: # see issue https://github.com/docker/distribution/issues/1661
 #### 注意事项：
 
 registry 清理最好是在 read-only 状态下进行清理工作，也就是在 gc 的时候不要 push image
+
+## 升级
+
+registry 在 LAIN 集群中有特殊作用，**不能**按照普通 LAIN 应用的流程升级。在升级之前，
+请先手动运行一个容器，并手动更改 webrouter 里 registry 的配置：
+
+```
+docker run -it -v /var/lib/registry:/var/lib/registry registry.lain.local/registry:release-1472106576-30f4071d4bdc3ed6d0cb3c34ea9047ec6c098e57 bash
+[root@09dd3a17b25f app]# /lain/app/entry.sh
+
+# 进入 webrouter 容器，手动将 /etc/nginx/upstream/registry.upstreams 的 server IP 改为上面容器的 IP
+```
+
+> 这是因为升级 registry 时，console 先把老版本的杀死，再起新版本的 registry；启动新版 registry 时需要
+> 先拉取镜像，而这时已经没有可用的 registry 了。所以需要手动起一个 registry。
+
+然后升级：
+
+```
+cd ${registry-project}
+lain build
+lain tag ${lain-cluster}
+lain push ${lain-cluster}
+lain deploy ${lain-cluster}
+```
+
+确定 LAIN 集群拉起的 registry 可用后，就可以删除手动启动的 registry 容器了。
