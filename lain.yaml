@@ -32,8 +32,13 @@ web:
   cmd: /lain/app/entry.sh
   memory: 256m
   port: 5000
-  persistent_dirs:
-    - /lain/app/fake_volumes  # prevent the registry drifting to another node
+  secret_files:
+    - config.yml
+  secret_files_bypass: True
+  cloud_volumes:
+    type: single
+    dirs:
+      - /var/lib/registry
 
 notify:
   slack: "#lain"
