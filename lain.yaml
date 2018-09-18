@@ -3,30 +3,20 @@ appname: registry
 giturl: https://github.com/laincloud/registry
 
 build:
-  base: laincloud/centos-lain:20160503
+  base: laincloud/centos-lain:20180103
   prepare:
-    version: "2"
+    version: "20180816"
     script:
-      - yum -y install librados2-devel apache2-utils && yum -y clean all
+      - rpm --rebuilddb && yum -y install librados2-devel apache2-utils cronie && yum -y clean all
       - mkdir -p /go/src/github.com/docker/distribution
       - cd /go/src/github.com/docker/distribution &&
         git clone https://github.com/docker/distribution.git . &&
         git checkout v2.4.1 &&
         GOPATH=/go/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH make PREFIX=/go clean binaries
+      - pip install -r requirements.txt
   script:
     - mkdir -p /lain/app/fake_volumes
 
-release:
-  dest_base: laincloud/centos-lain:20170828
-  copy:
-    - src: /go/bin/registry
-      dest: /usr/bin/registry
-    - src: config.yml
-      dest: config.yml
-    - src: auth
-      dest: auth
-    - src: entry.sh
-      dest: entry.sh
 
 web:
   cmd: /lain/app/entry.sh
@@ -34,6 +24,7 @@ web:
   port: 5000
   secret_files:
     - config.yml
+    - /lain/app/secret.json
   secret_files_bypass: True
   cloud_volumes:
     type: single

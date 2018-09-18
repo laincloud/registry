@@ -23,4 +23,7 @@ registry garbage-collect ${WORK_DIR}/config.yml
 
 sleep 5
 
+/usr/sbin/crond
+crontab ${WORK_DIR}/cron
+
 exec registry serve ${WORK_DIR}/config.yml
