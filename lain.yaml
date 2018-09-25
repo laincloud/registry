@@ -26,10 +26,8 @@ web:
     - config.yml
     - /lain/app/secret.json
   secret_files_bypass: True
-  cloud_volumes:
-    type: single
-    dirs:
-      - /var/lib/registry
+  volumes:
+    - /lain/app/fake_volumes
 
 notify:
   slack: "#lain"
