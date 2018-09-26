@@ -19,7 +19,8 @@ else
     export REGISTRY_AUTH=""
 fi
 
-registry garbage-collect ${WORK_DIR}/config.yml
+# Don't need garbage-collect when start, do it in cron job
+# registry garbage-collect ${WORK_DIR}/config.yml
 
 sleep 5
 
