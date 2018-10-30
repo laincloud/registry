@@ -28,6 +28,8 @@ web:
   secret_files_bypass: True
   volumes:
     - /lain/app/fake_volumes
+  logs:
+    - clean_images.log
 
 notify:
   slack: "#lain"

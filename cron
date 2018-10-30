@@ -1,1 +1,1 @@
-0 4 * * 6 /lain/app/clean-registry-images.sh
+0 4 * * 6 /lain/app/clean-registry-images.sh 2> /lain/logs/error-cron.log
