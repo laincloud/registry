@@ -36,6 +36,7 @@ import os
 import argparse
 import www_authenticate
 import logging
+from logging import handlers
 from getpass import getpass
 from datetime import timedelta, datetime as dt
 from urllib3.exceptions import InsecureRequestWarning
@@ -44,10 +45,15 @@ from urllib3.exceptions import InsecureRequestWarning
 log = logging.Logger(__file__)
 log.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 handler.setFormatter(
         logging.Formatter("[%(levelname)s] %(asctime)s,%(lineno)4d, %(funcName)s : %(message)s", '%Y-%m-%d %H:%M:%S'))
+fileHandler = handlers.RotatingFileHandler('/lain/app/clean.log', 'a', 10 * 1024 * 1024, 2)
+fileHandler.setLevel(logging.DEBUG)
+fileHandler.setFormatter(
+        logging.Formatter("[%(levelname)s] %(asctime)s,%(lineno)4d, %(funcName)s : %(message)s", '%Y-%m-%d %H:%M:%S'))
 log.addHandler(handler)
+log.addHandler(fileHandler)
 
 # number of image versions to keep
 CONST_KEEP_LAST_VERSIONS = 100
@@ -337,12 +343,13 @@ class Registry:
 
         if config_result is None:
             log.error("  tag digest not found: {0}".format(self.last_error))
-            return []
+            return None
 
         json_result = json.loads(config_result.text)
+        log.debug("schemaVersion=%s, image=%s, tag=%s", json_result['schemaVersion'], image_name, tag)
         if json_result['schemaVersion'] == 1:
-            log.error("Docker schemaVersion 1 isn't supported for deleting by age now")
-            exit(1)
+            log.warn("Docker schemaVersion 1 isn't supported for deleting by age now")
+            return None
         else:
             tag_config = json_result['config']
 
@@ -524,6 +531,10 @@ for more detail on garbage collection read here:
 def delete_tags(registry, image_name, dry_run, tags_to_delete, tags_to_keep):
     keep_tag_digests = []
 
+    if not tags_to_delete:
+        log.info("No tags to delete, return...")
+        return
+
     if tags_to_keep:
         log.info("Getting digests for tags to keep:")
         for tag in tags_to_keep:
@@ -559,25 +570,31 @@ def get_tags_like(args_tags_like, tags_list):
         log.info("tag like: {0}".format(tag_like))
         for tag in tags_list:
             if re.search(tag_like, tag):
-                log.info("Adding {0} to tags list".format(tag))
                 result.add(tag)
     return result
 
 
 def get_tags(all_tags_list, image_name, tags_like):
-    # check if there are args for special tags
-    result = set()
-    if tags_like:
-        result = get_tags_like(tags_like, all_tags_list)
-    else:
-        result.update(all_tags_list)
-
+    """
+    return a dict 
+    """
+    res_dict = {"others": set()}
     # no ":" in image_name actually, if ":" specify in image name, will only process this tag
     # get tags from image name if any
     if ":" in image_name:
         image_name, tag_name = image_name.split(":")
-        result = set([tag_name])
-    return result
+        all_tags_list = [tag_name]
+
+    if tags_like:
+        for tag_like in tags_like:
+            res_dict.setdefault(tag_like, set())
+            for tag in all_tags_list:
+                if re.search(tag_like, tag):
+                    res_dict[tag_like].add(tag)
+    else:
+        res_dict["others"].update(all_tags_list)
+
+    return res_dict
 
 
 def delete_tags_by_age(registry, image_name, dry_run, days, tags_to_keep):
@@ -601,7 +618,7 @@ def delete_tags_by_age(registry, image_name, dry_run, days, tags_to_keep):
             log.info("will be deleted tag: {0} timestamp: {1}".format(tag, image_age))
             tags_to_delete.append(tag)
 
-    log.info('------------deleting-------------')
+    log.info('------------deleting: delete_tags_by_age-------------')
     delete_tags(registry, image_name, dry_run, tags_to_delete, tags_to_keep)
 
 
@@ -611,8 +628,8 @@ def get_newer_tags(registry, image_name, days, tags_list):
     for tag in tags_list:
         image_config = registry.get_tag_config(image_name, tag)
 
-        if image_config == []:
-            log.info("tag not found")
+        if not image_config:
+            log.warn("image tag config not found")
             continue
 
         image_age = registry.get_image_age(image_name, image_config)
@@ -688,12 +705,16 @@ def main_loop(args):
             log.info("  no tags!")
             continue
 
-        tags_list = get_tags(all_tags_list, image_name, args.tags_like)
+        tags_like_dict = get_tags(all_tags_list, image_name, args.tags_like)
+        tags_list = [v for k in tags_like_dict for v in tags_like_dict[k]]
+
+        log.debug("-------all tags for image: %s-----", image_name)
+        log.debug(pprint.pformat(sorted(tags_list, key=natural_keys)))
 
         # print(tags and optionally layers
         for tag in tags_list:
-            log.info("  tag: {0}".format(tag))
             if args.layers:
+                log.info("  tag: {0}".format(tag))
                 for layer in registry.list_tag_layers(image_name, tag):
                     if 'size' in layer:
                         log.info("    layer: {0}, size: {1}".format(layer['digest'], layer['size']))
@@ -702,7 +723,12 @@ def main_loop(args):
 
         # add tags to "tags_to_keep" list, if we have regexp "tags_to_keep"
         # entries or a number of hours for "keep_by_hours":
+
         keep_tags = []
+        for k, v in tags_like_dict.iteritems():
+            to_keep = sorted(v, key=natural_keys, reverse=True)[:keep_last_versions]
+            keep_tags.extend(to_keep)
+
         if args.keep_tags_like:
             keep_tags.extend(get_tags_like(args.keep_tags_like, tags_list))
         if args.keep_by_days:
@@ -713,14 +739,13 @@ def main_loop(args):
             if args.delete_all:
                 tags_list_to_delete = list(tags_list)
             else:
-                tags_list_to_delete = sorted(tags_list, key=natural_keys)[:-keep_last_versions]
+                tags_list_to_delete = [tag for tag in tags_list if tag not in keep_tags]
 
-                # A manifest might be shared between different tags. Explicitly add those
-                # tags that we want to preserve to the keep_tags list, to prevent
-                # any manifest they are using from being deleted.
-                tags_list_to_keep = [tag for tag in tags_list if tag not in tags_list_to_delete]
-                keep_tags.extend(tags_list_to_keep)
-            keep_tags = list(set(keep_tags))  # Eliminate duplicates
+            keep_tags = sorted(set(keep_tags), key=natural_keys)  # Eliminate duplicates
+            log.debug("-------keep tags---------")
+            log.debug(pprint.pformat(keep_tags))
+            log.info("-------to deleted tags---------")
+            log.info(pprint.pformat(tags_list_to_delete))
             delete_tags(registry, image_name, args.dry_run, tags_list_to_delete, keep_tags)
 
         # delete tags by age in days
@@ -732,6 +757,11 @@ def main_loop(args):
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.debug:
+        log.setLevel(logging.DEBUG)
+
+    log.debug(pprint.pformat(args))
+
     with open(os.path.join(os.path.dirname(__file__), "secret.json"), "r") as f:
         data = json.load(f)
         try:
